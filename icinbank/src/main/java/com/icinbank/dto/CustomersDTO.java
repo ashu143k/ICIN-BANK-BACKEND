@@ -1,6 +1,10 @@
 package com.icinbank.dto;
 
 import java.util.Date;
+import java.util.List;
+
+import com.icinbank.bean.BenificialAccount;
+import com.icinbank.bean.ChequeBookRequest;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,9 +19,11 @@ public class CustomersDTO {
 	private String customerEmail;
 	private String customerPassword;
 	private Date customerDateOfBirth;
-	private int customerAccountNumber;
-	private boolean moneyTransfer;
-	private boolean moneyDeposit;
-	private boolean moneyWithdrawl;
+	private long customerAccountNumber;
+	private boolean moneyTransferStatus;
+	private boolean moneyDepositStatus;
+	private boolean moneyWithdrawlStatus;
 	private boolean accountBlockStatus;
+	private long primaryAccountBalance;
+	private long savingAccountBalance;
 }

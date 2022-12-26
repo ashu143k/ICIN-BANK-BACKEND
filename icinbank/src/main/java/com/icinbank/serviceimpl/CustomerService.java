@@ -1,6 +1,8 @@
 package com.icinbank.serviceimpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -30,14 +32,12 @@ public class CustomerService implements ICustomerService {
 		newCustomer.setCustomerAccountNumber(addCustomer.getCustomerAccountNumber());
 		newCustomer.setCustomerEmail(addCustomer.getCustomerEmail());
 		newCustomer.setCustomerPassword(addCustomer.getCustomerPassword());
-		/*
-		 * newCustomer.setPrimaryAccountBalance(addCustomer.getPrimaryAccountBalance());
-		 * newCustomer.setSavingAccountBalance(addCustomer.getSavingAccountBalance());
-		 */
+		newCustomer.setPrimaryAccountBalance(addCustomer.getPrimaryAccountBalance());
+		newCustomer.setSavingAccountBalance(addCustomer.getSavingAccountBalance());
 		newCustomer.setCustomerDateOfBirth(addCustomer.getCustomerDateOfBirth());
-		newCustomer.setMoneyDeposit(addCustomer.isMoneyDeposit());
-		newCustomer.setMoneyTransfer(addCustomer.isMoneyTransfer());
-		newCustomer.setMoneyWithdrawl(addCustomer.isMoneyWithdrawl());
+		newCustomer.setMoneyDepositStatus(addCustomer.isMoneyDepositStatus());
+		newCustomer.setMoneyTransferStatus(addCustomer.isMoneyTransferStatus());
+		newCustomer.setMoneyWithdrawlStatus(addCustomer.isMoneyWithdrawlStatus());
 		custRepo.save(newCustomer);
 		return "success";
 	}
@@ -46,20 +46,10 @@ public class CustomerService implements ICustomerService {
 	public String updateCustomer(CustomersDTO updateCustomer) {
 		Customers updatingCustomer = new Customers();
 		updatingCustomer.setCustomerId(updateCustomer.getCustomerId());
-		updatingCustomer.setCustomerName(updateCustomer.getCustomerName());
-		updatingCustomer.setCustomerAccountNumber(updateCustomer.getCustomerAccountNumber());
-		updatingCustomer.setCustomerEmail(updateCustomer.getCustomerEmail());
-		updatingCustomer.setCustomerPassword(updateCustomer.getCustomerPassword());
-		/*
-		 * updatingCustomer.setPrimaryAccountBalance(updateCustomer.
-		 * getPrimaryAccountBalance());
-		 * updatingCustomer.setSavingAccountBalance(updateCustomer.
-		 * getSavingAccountBalance());
-		 */
-		updatingCustomer.setCustomerDateOfBirth(updateCustomer.getCustomerDateOfBirth());
-		updatingCustomer.setMoneyDeposit(updateCustomer.isMoneyDeposit());
-		updatingCustomer.setMoneyTransfer(updateCustomer.isMoneyTransfer());
-		updatingCustomer.setMoneyWithdrawl(updateCustomer.isMoneyWithdrawl());
+		updateCustomer.setAccountBlockStatus(updateCustomer.isAccountBlockStatus());
+		updatingCustomer.setMoneyDepositStatus(updateCustomer.isMoneyDepositStatus());
+		updatingCustomer.setMoneyTransferStatus(updateCustomer.isMoneyTransferStatus());
+		updatingCustomer.setMoneyWithdrawlStatus(updateCustomer.isMoneyWithdrawlStatus());
 		custRepo.save(updatingCustomer);
 		return "Customer Details Updated";
 	}
@@ -76,20 +66,76 @@ public class CustomerService implements ICustomerService {
 		return custRepo.findAll();
 	}
 
-
-	public String validateCustomer(String customerEmail, String customerPassword) {
+	public Map<String, Object> validateCustomer(String customerEmail, String customerPassword) {
+		boolean accountBlockStatus = false;
+		Map<String, Object> returnObject = new HashMap<String, Object>();
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Customers> cq=cb.createQuery(Customers.class);
-		Root<Customers> custRoot=cq.from(Customers.class);
+		CriteriaQuery<Customers> cq = cb.createQuery(Customers.class);
+		Root<Customers> custRoot = cq.from(Customers.class);
 		Predicate customerEmailPredicate = cb.equal(custRoot.get("customerEmail"), customerEmail);
 		Predicate customerPasswordePredicate = cb.equal(custRoot.get("customerPassword"), customerPassword);
 		Predicate customerValidationCheck = cb.and(customerEmailPredicate, customerPasswordePredicate);
 		cq.where(customerValidationCheck);
-		List<Customers> resultList=entityManager.createQuery(cq).getResultList();
-		if(resultList.isEmpty())
-		return "Incorret UserId or Password";
-		else
-		return "Success";
+		List<Customers> resultList = entityManager.createQuery(cq).getResultList();
+		if (!resultList.isEmpty()) {
+			for (Customers result : resultList) {
+				if (result.isAccountBlockStatus()) {
+					accountBlockStatus = true;
+				}
+			}
+			if (accountBlockStatus == true) {
+				returnObject.put("ValidationStatus","Account is Block please contact bank represtative for further details");
+			}else {
+				returnObject.put("ValidationStatus","Success");
+				for (Customers result : resultList) {
+					returnObject.put("customerId", result.getCustomerId());
+					returnObject.put("customerAccountNo", result.getCustomerAccountNumber());
+					returnObject.put("customerName", result.getCustomerName());
+					returnObject.put("primaryAccountBalance", result.getPrimaryAccountBalance());
+					returnObject.put("savingAccountBalance", result.getSavingAccountBalance());
+					returnObject.put("customerEmail", result.getCustomerEmail());
+					returnObject.put("depositMoneyStatus", result.isMoneyDepositStatus());
+					returnObject.put("withdrawalMoneyStatus", result.isMoneyWithdrawlStatus());
+					returnObject.put("transferMoneyStatus", result.isMoneyTransferStatus());
+
+				}
+
+			}
+		}
+return returnObject;
+	}
+
+	@Override
+	public Customers findById(long customerId) {
+		Customers cust=entityManager.find(Customers.class, customerId);
+		return cust;
+	}
+
+	@Override
+	public String updatePrimaryAccountBalanceCustomerById(long customerId, CustomersDTO updateCustomer) {
+		Customers customerToUpdate = custRepo.getOne(customerId);
+		customerToUpdate.setPrimaryAccountBalance(updateCustomer.getPrimaryAccountBalance());
+		custRepo.save(customerToUpdate);
+		return "updated";
+	}
+
+	@Override
+	public String updateSavingAccountBalanceCustomerById(long customerId, CustomersDTO updateCustomer) {
+		Customers customerToUpdate = custRepo.getOne(customerId);
+		customerToUpdate.setSavingAccountBalance(updateCustomer.getSavingAccountBalance());
+		custRepo.save(customerToUpdate);
+		return "updated";
+	}
+
+	@Override
+	public String updateCustomerById(long custId, CustomersDTO updateCustomer) {
+		Customers updateCust= custRepo.getOne(custId);
+		updateCust.setAccountBlockStatus(updateCustomer.isAccountBlockStatus());
+		updateCust.setMoneyDepositStatus(updateCustomer.isMoneyDepositStatus());
+		updateCust.setMoneyTransferStatus(updateCustomer.isMoneyTransferStatus());
+		updateCust.setMoneyWithdrawlStatus(updateCustomer.isMoneyWithdrawlStatus());
+		custRepo.save(updateCust);
+		return "Customer Updated Successfully";
 	}
 
 }

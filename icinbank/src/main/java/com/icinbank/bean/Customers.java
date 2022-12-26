@@ -1,7 +1,6 @@
 package com.icinbank.bean;
 
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -11,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -33,23 +31,12 @@ public class Customers {
 	private String customerEmail;
 	private String customerPassword;
 	private Date customerDateOfBirth;
-	private int customerAccountNumber;
-	private boolean moneyTransfer;
-	private boolean moneyDeposit;
-	private boolean moneyWithdrawl;
+	private long customerAccountNumber;
+	private boolean moneyTransferStatus;
+	private boolean moneyDepositStatus;
+	private boolean moneyWithdrawlStatus;
 	private boolean accountBlockStatus;
-	
-	@OneToMany(mappedBy = "customerId")
-	private List<BenificialAccount> BenificialAccount;
-	
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinTable(name = "primaryAccount", joinColumns = {@JoinColumn(name = "customerId", referencedColumnName = "customerId")},
-    inverseJoinColumns = {@JoinColumn(name = "primaryAccountId", referencedColumnName = "primaryAccountId")})
-	private PrimaryAccount primaryAccount;
-	
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinTable(name = "savingAccount", joinColumns = {@JoinColumn(name = "customerId", referencedColumnName = "customerId")},
-    inverseJoinColumns = {@JoinColumn(name = "savingAccountId", referencedColumnName = "savingAccountId")})
-	private SavingAccount savingAccount;
+	private long primaryAccountBalance;
+	private long savingAccountBalance;
 
 }

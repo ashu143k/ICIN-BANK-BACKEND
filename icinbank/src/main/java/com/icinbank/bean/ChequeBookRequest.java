@@ -12,17 +12,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "SavingAccount")
+@Table(name = "ChequeBookRequest")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SavingAccount {
+public class ChequeBookRequest {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long savingAccountId;
-	private long savingAccountBalance;
+	private long chequeBookRequestId;
+	private String chequeBookRequestedByAccountType;
+	private boolean chequeRequestStatus; 
 	
-	@OneToOne(mappedBy = "savingAccount")
+	@OneToOne
 	private Customers customer;
-	
 }
